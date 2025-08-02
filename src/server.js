@@ -5,7 +5,8 @@ import dbConnect from './config/db.config.js';
 import userRoutes from './routes/userRoutes.js';
 
 const app = express();
-const port = process.env.PORT || 8000;
+const PORT = process.env.PORT || 8000;
+const HOST = process.env.LOCAL_PORT || 'localhost';
 
 async function connectToDatabase() {
   try {
@@ -24,9 +25,15 @@ app.use(bodyParser.json());
 // Middleware
 app.use(express.json());
 
+app.use(express.urlencoded({ extended: true }));
+
+app.get('/', (req, res) => {
+  res.send('Hello World!');
+});
+
 // Routes
 app.use('/api/user', userRoutes);
 
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+app.listen(PORT, HOST, () => {
+  console.log(`Server is running on http://${HOST}:${PORT}`);
 });
