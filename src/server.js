@@ -3,10 +3,12 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import dbConnect from './config/db.config.js';
 import userRoutes from './routes/userRoutes.js';
+import organizerRoutes from './routes/organizerRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 8000;
-const HOST = process.env.LOCAL_PORT || 'localhost';
+// const HOST = process.env.LOCAL_PORT;
+const HOST = 'localhost';
 
 async function connectToDatabase() {
   try {
@@ -33,6 +35,7 @@ app.get('/', (req, res) => {
 
 // Routes
 app.use('/api/user', userRoutes);
+app.use('/api/organizer', organizerRoutes);
 
 app.listen(PORT, HOST, () => {
   console.log(`Server is running on http://${HOST}:${PORT}`);

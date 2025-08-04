@@ -34,7 +34,10 @@ export const postRegisterUser = async (userData) => {
             'INSERT INTO tbl_users (name, email, password, phone_number) VALUES ($1, $2, $3, $4) RETURNING *',
             [name, email, hashedPassword, phone_number]
         );
-        return result.rows[0];
+        
+        // Return user data without password
+        const { password: userPassword, ...userWithoutPassword } = result.rows[0];
+        return userWithoutPassword;
     } catch (error) {
         throw error;
     } finally {
