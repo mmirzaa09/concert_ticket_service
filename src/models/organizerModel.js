@@ -1,7 +1,6 @@
 import dbConnect from '../config/db.config.js';
 import bycrypt from 'bcrypt';
 import { encryptionPassword, jwtGenerate } from '../utils/functions.js';
-import * as response from '../utils/responseHandler.js';
 
 export const getAllOrganizers = async () => {
     const client = await dbConnect.connect();
