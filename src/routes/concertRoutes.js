@@ -4,7 +4,7 @@ import { authenticateJWT } from '../middleware/jwtMiddleware.js';
 
 const router = express.Router();
 
-router.get('/concert', authenticateJWT, getConcert);
+router.get('/', authenticateJWT, getConcert);
 router.post('/create', createConcert);
 
 export default router;
