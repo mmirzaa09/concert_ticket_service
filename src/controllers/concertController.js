@@ -1,5 +1,5 @@
 import * as response from '../utils/responseHandler.js';
-import { getAllConcerts, postCreateConcert } from "../models/concertModel.js";
+import { getAllConcerts, postCreateConcert, getConcertById } from "../models/concertModel.js";
 
 export const getConcert = async (req, res) => {
     try {
@@ -36,5 +36,18 @@ export const createConcert = async (req, res) => {
     } catch (error) {
         console.log('Error creating concert:', error);
         return response.serverError(res, error);
+    }
+};
+
+export const getConcertId = async (req, res) => {
+    try {
+        const concert = await getConcertById(req.params.id);
+        if (!concert) {
+            return response.notFound(res, 'Concert not found');
+        }
+        return response.success(res, 'Concert fetch successful', concert);
+    } catch (error) {
+        console.log('Error fetching concert by ID:', error);
+        return response.serverError(res, 'Failed to get concert', error.message);
     }
 };
