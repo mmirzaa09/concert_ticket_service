@@ -7,11 +7,12 @@ import dbConnect from './config/db.config.js';
 import userRoutes from './routes/userRoutes.js';
 import organizerRoutes from './routes/organizerRoutes.js';
 import concertRoutes from './routes/concertRoutes.js';
+import uploadRoutes from './routes/UploadImageRoute.js';
+import {handleUploadError} from './controllers/uploadImageController.js';
 
 const app = express();
 const PORT = process.env.PORT || 8000;
-const HOST = process.env.LOCAL_PORT;
-// const HOST = 'localhost';
+const HOST = process.env.LOCAL_HOST || 'localhost';
 
 async function connectToDatabase() {
   try {
@@ -31,8 +32,8 @@ app.use(bodyParser.json());
 
 // Middleware
 app.use(express.json());
-
 app.use(express.urlencoded({ extended: true }));
+app.use('/uploads', express.static('uploadImage'));
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
@@ -42,6 +43,10 @@ app.get('/', (req, res) => {
 app.use('/api/user', userRoutes);
 app.use('/api/organizer', organizerRoutes);
 app.use('/api/concert', concertRoutes);
+app.use('/api/upload', uploadRoutes);
+
+// Error handling middleware for multer errors
+app.use(handleUploadError);
 
 app.listen(PORT, HOST, () => {
   console.log(`Server is running on http://${HOST}:${PORT}`);
