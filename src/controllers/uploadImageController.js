@@ -1,6 +1,7 @@
 import { getFileUrl } from '../models/uploadImageModel.js';
 
 export const uploadImage = async (req, res) => {
+    console.log('cek this file', req.body);
   try {
     
     if (!req.file) {

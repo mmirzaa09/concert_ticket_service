@@ -1,5 +1,6 @@
 import * as response from '../utils/responseHandler.js';
 import { getAllConcerts, postCreateConcert, getConcertById } from "../models/concertModel.js";
+import { generateFileUrl } from "../models/uploadImageModel.js";
 
 export const getConcert = async (req, res) => {
     try {
@@ -14,6 +15,7 @@ export const getConcert = async (req, res) => {
 };
 
 export const createConcert = async (req, res) => {
+
     try {
         const {
             title,
@@ -21,18 +23,49 @@ export const createConcert = async (req, res) => {
             date,
             venue,
             price,
-            image_url,
             description,
             total_tickets,
             id_organizer,
         } = req.body;
 
-        if (!title || !artist || !date || !venue || !price || !image_url || !description || !total_tickets || !id_organizer) {
-            return response.badRequest(res, 'All fields are required');
+        // Handle image URL - either from uploaded file or provided URL
+        let image_url = req.body.image_url || '';
+
+        if (req.file) {
+            // Generate proper URL for uploaded file
+            image_url = generateFileUrl(req.file.path, req);
+            console.log('Generated image URL:', image_url);
         }
 
-        const concert = await postCreateConcert(req.body);
-        return response.success(res, 'Concert created successfully', concert);
+        // Validate required fields
+        if (!title || !artist || !date || !venue || !price || !description || !total_tickets || !id_organizer) {
+            return response.badRequest(res, 'All fields are required: title, artist, date, venue, price, description, total_tickets, id_organizer');
+        }
+
+        // Validate image is provided
+        if (!image_url) {
+            return response.badRequest(res, 'Concert image is required. Either upload an image file or provide image_url');
+        }
+
+        // Create concert data with image URL
+        const concertData = {
+            title,
+            artist,
+            date,
+            venue,
+            price: parseFloat(price), // Convert to number
+            description,
+            total_tickets: parseInt(total_tickets), // Convert to number
+            id_organizer: parseInt(id_organizer), // Convert to number
+            image_url
+        };
+
+        // Save concert to database
+        const concert = await postCreateConcert(concertData);
+
+        return response.success(res, 'Concert created successfully', {
+            concert,
+        });
     } catch (error) {
         console.log('Error creating concert:', error);
         return response.serverError(res, error);

@@ -26,23 +26,14 @@ const createUserDirectory = (userId) => {
   return userDir;
 };
 
-const createDateDirectory = (basePath) => {
-  const dateFolder = new Date().toISOString().split('T')[0];
-  const datePath = path.join(basePath, dateFolder);
-  if (!fs.existsSync(datePath)) {
-    fs.mkdirSync(datePath, { recursive: true });
-  }
-  return datePath;
-};
-
 export const getFileUrl = (filePath, host, port) => {
   // Convert absolute path to relative path from project root
   let relativePath = path.relative(projectRoot, filePath);
   
   // Replace uploadImage with uploads in the URL
   const urlPath = relativePath.replace(/\\/g, '/').replace('uploadImage/', '');
-  
-  return `http://${host}:${port}/uploads/${urlPath}`;
+
+  return `${urlPath}`;
 };
 
 export const isValidImageType = (file) => {
@@ -61,11 +52,11 @@ export const generateFileName = (originalName, customName) => {
 
 export const getUploadPath = (userId = null) => {
   if (userId) {
-    const userDir = createUserDirectory(userId);
-    return createDateDirectory(userDir);
+    // Return user directory without date subfolder
+    return createUserDirectory(userId);
   } else {
-    const baseDir = ensureBaseDirectory();
-    return createDateDirectory(baseDir);
+    // Return base directory without date subfolder
+    return ensureBaseDirectory();
   }
 };
 
@@ -90,5 +81,5 @@ export const generateFileUrl = (filePath, req) => {
   // Replace uploadImage with uploads and normalize slashes
   const urlPath = relativePath.replace(/\\/g, '/').replace('uploadImage/', '');
   
-  return `${protocol}://${host}/uploads/${urlPath}`;
+  return `${urlPath}`;
 };
