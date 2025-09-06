@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import bodyParser from 'body-parser';
 import morgan from 'morgan';
+import cors from 'cors';
 
 import dbConnect from './config/db.config.js';
 import userRoutes from './routes/userRoutes.js';
@@ -25,6 +26,7 @@ async function connectToDatabase() {
 
 connectToDatabase();
 
+app.use(cors());
 app.use(morgan('combined'));
 
 // support parsing of application/json type post data

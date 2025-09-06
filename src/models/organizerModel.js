@@ -72,7 +72,6 @@ export const postLoginOrganizer = async (email, password) => {
         const { password: hashedPassword, ...organizerWithoutPassword } = organizer;
         return { ...organizerWithoutPassword, token };
     } catch (error) {
-        console.error('Error logging in organizer:', error);
         throw error;
     } finally {
         client.release();

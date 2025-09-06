@@ -71,7 +71,7 @@ export const postCreateConcert = async (concertData) => {
 export const getConcertById = async (concertId) => {
     const client = await dbConnect.connect();
     try {
-        const result = await client.query("SELECT * FROM tbl_concerts WHERE id = $1", [concertId]);
+        const result = await client.query("SELECT * FROM tbl_concerts WHERE id_concert = $1", [concertId]);
         return result.rows[0];
     } catch (error) {
         console.log("Error fetching concert by ID:", error);

@@ -40,13 +40,15 @@ export const loginOrganizer = async (req, res) => {
         const organizer = await postLoginOrganizer(email, password);
         return response.success(res, 'Organizer logged in successfully', organizer);
     } catch (error) {
-        if (error.message === 'User not found') {
-            return response.notFound(res, error.message);
+
+        if (error === 'Organizer not found') {
+            return response.notFound(res, 'Organizer not found');
         }
 
-        if (error.message === 'Invalid credentials') {
-            return response.unauthorized(res, error.message);
+        if (error === 'Invalid credentials') {
+            return response.unauthorized(res, 'Invalid credentials');
         }
+
         return response.serverError(res, error.message);
     }
 };
