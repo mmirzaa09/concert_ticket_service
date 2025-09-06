@@ -1,9 +1,9 @@
 import * as response from '../utils/responseHandler.js';
-import { getAllOrganizers, postRegisterOrganizer, postLoginOrganizer } from "../models/organizerModel.js";
+import { getAllOrganizersModel, postRegisterOrganizerModel, postLoginOrganizerModel } from "../models/organizerModel.js";
 
-export const getOrganizer = async (req, res) => {
+export const getOrganizerController = async (req, res) => {
     try {
-        const organizers = await getAllOrganizers();
+        const organizers = await getAllOrganizersModel();
         if (!organizers.length) {
             return response.notFound(res, 'No organizers found');
         }
@@ -14,7 +14,7 @@ export const getOrganizer = async (req, res) => {
     }
 };
 
-export const registerOrganizer = async (req, res) => {
+export const registerOrganizerController = async (req, res) => {
     const { name, email, password, phone_number, address, role } = req.body;
 
     if (!name || !email || !password || !phone_number || !address) {
@@ -22,14 +22,14 @@ export const registerOrganizer = async (req, res) => {
     }
 
     try {
-        const newOrganizer = await postRegisterOrganizer({ name, email, password, phone_number, address, role });
+        const newOrganizer = await postRegisterOrganizerModel({ name, email, password, phone_number, address, role });
         return response.success(res, 'Organizer registered successfully', newOrganizer);
     } catch (error) {
         return response.badRequest(res, 'Failed to register organizer', error);
     }
 };
 
-export const loginOrganizer = async (req, res) => {
+export const loginOrganizerController = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -37,7 +37,7 @@ export const loginOrganizer = async (req, res) => {
     }
 
     try {
-        const organizer = await postLoginOrganizer(email, password);
+        const organizer = await postLoginOrganizerModel(email, password);
         return response.success(res, 'Organizer logged in successfully', organizer);
     } catch (error) {
 

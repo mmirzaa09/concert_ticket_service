@@ -1,9 +1,9 @@
-import { getAllUsers, postRegisterUser, postLoginUser } from '../models/userModel.js';
+import { getAllUsersModel, postRegisterUserModel, postLoginUserModel } from '../models/userModel.js';
 import * as response from '../utils/responseHandler.js';
 
-export const getUser = async (req, res) => {
+export const getUserController = async (req, res) => {
     try {
-        const users = await getAllUsers();
+        const users = await getAllUsersModel();
         if (!users.length) {
             return response.notFound(res, 'No users found');
         }
@@ -14,7 +14,7 @@ export const getUser = async (req, res) => {
     }
 };
 
-export const registerUser = async (req, res) => {
+export const registerUserController = async (req, res) => {
     const { name, email, password, phone_number } = req.body;
 
     if (!name || !email || !password || !phone_number) {
@@ -22,21 +22,21 @@ export const registerUser = async (req, res) => {
     }
 
     try {
-        const newUser = await postRegisterUser({ name, email, password, phone_number });
+        const newUser = await postRegisterUserModel({ name, email, password, phone_number });
         return response.success(res, 'User registered successfully', newUser);
     } catch (error) {
         return response.badRequest(res, 'Failed to register user', error);
     }
 };
 
-export const loginUser = async (req, res) => {
+export const loginUserController = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
         return response.badRequest(res, 'Email and password are required');
     }
     try {
-        const user = await postLoginUser(email, password);
+        const user = await postLoginUserModel(email, password);
         return response.success(res, 'User logged in successfully', user);
     } catch (error) {
         if (error.message === 'User not found') {

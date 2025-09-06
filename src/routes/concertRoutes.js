@@ -1,11 +1,11 @@
 import express from 'express';
-import { getConcert, createConcert, getConcertId } from '../controllers/concertController.js';
+import { getConcertController, createConcertController, getConcertIdController } from '../controllers/concertController.js';
 import { authenticateJWT } from '../middleware/jwtMiddleware.js';
 import { upload } from '../middleware/UploadImageMiddleware.js';
 
 const router = express.Router();
-router.post('/create', upload.single('image'), createConcert);
-router.get('/', authenticateJWT, getConcert);
-router.get('/:id', authenticateJWT, getConcertId);
+router.post('/create', upload.single('image'), createConcertController);
+router.get('/', authenticateJWT, getConcertController);
+router.get('/:id', authenticateJWT, getConcertIdController);
 
 export default router;

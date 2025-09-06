@@ -1,6 +1,6 @@
 import dbConnect from "../config/db.config.js";
 
-export const getAllConcerts = async () => {
+export const getAllConcertsModel = async () => {
   const client = await dbConnect.connect();
   try {
     const result = await client.query("SELECT * FROM tbl_concerts");
@@ -13,7 +13,7 @@ export const getAllConcerts = async () => {
   }
 };
 
-export const postCreateConcert = async (concertData) => {
+export const postCreateConcertModel = async (concertData) => {
     const client = await dbConnect.connect();
     try {
         const {
@@ -68,7 +68,7 @@ export const postCreateConcert = async (concertData) => {
     }
 };
 
-export const getConcertById = async (concertId) => {
+export const getConcertByIdModel = async (concertId) => {
     const client = await dbConnect.connect();
     try {
         const result = await client.query("SELECT * FROM tbl_concerts WHERE id_concert = $1", [concertId]);

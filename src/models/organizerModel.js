@@ -2,7 +2,7 @@ import dbConnect from '../config/db.config.js';
 import bycrypt from 'bcrypt';
 import { encryptionPassword, jwtGenerate } from '../utils/functions.js';
 
-export const getAllOrganizers = async () => {
+export const getAllOrganizersModel = async () => {
     const client = await dbConnect.connect();
     try {
         const result = await client.query('SELECT * FROM tbl_organizers');
@@ -19,7 +19,7 @@ export const getAllOrganizers = async () => {
     }
 };
 
-export const postRegisterOrganizer = async (organizerData) => {
+export const postRegisterOrganizerModel = async (organizerData) => {
     const client = await dbConnect.connect();
     try {
         const { name, email, password, phone_number, address, role } = organizerData;
@@ -48,7 +48,7 @@ export const postRegisterOrganizer = async (organizerData) => {
     }
 };
 
-export const postLoginOrganizer = async (email, password) => {
+export const postLoginOrganizerModel = async (email, password) => {
     const client = await dbConnect.connect();
     try {
         // Fetch organizer by email

@@ -3,7 +3,7 @@ import bycrypt from 'bcrypt';
 import { encryptionPassword, jwtGenerate } from '../utils/functions.js';
 import * as response from '../utils/responseHandler.js';
 
-export const getAllUsers = async () => {
+export const getAllUsersModel = async () => {
     const client = await dbConnect.connect();
     try {
         const result = await client.query('SELECT * FROM tbl_users');
@@ -17,7 +17,7 @@ export const getAllUsers = async () => {
     }
 };
 
-export const postRegisterUser = async (userData) => {
+export const postRegisterUserModel = async (userData) => {
     const client = await dbConnect.connect();
     try {
         const { name, email, password, phone_number } = userData;
@@ -45,7 +45,7 @@ export const postRegisterUser = async (userData) => {
     }
 };
 
-export const postLoginUser = async (email, password) => {
+export const postLoginUserModel = async (email, password) => {
     const client = await dbConnect.connect();
     try {
         const result = await client.query('SELECT * FROM tbl_users WHERE email = $1', [email]);

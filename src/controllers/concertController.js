@@ -1,10 +1,10 @@
 import * as response from '../utils/responseHandler.js';
-import { getAllConcerts, postCreateConcert, getConcertById } from "../models/concertModel.js";
+import { getAllConcertsModel, postCreateConcertModel, getConcertByIdModel } from "../models/concertModel.js";
 import { generateFileUrl } from "../models/uploadImageModel.js";
 
-export const getConcert = async (req, res) => {
+export const getConcertController = async (req, res) => {
     try {
-        const concerts = await getAllConcerts();
+        const concerts = await getAllConcertsModel();
         if (!concerts.length) {
             return response.success(res, 'No concerts found');
         }
@@ -14,7 +14,7 @@ export const getConcert = async (req, res) => {
     }
 };
 
-export const createConcert = async (req, res) => {
+export const createConcertController = async (req, res) => {
 
     try {
         const {
@@ -61,7 +61,7 @@ export const createConcert = async (req, res) => {
         };
 
         // Save concert to database
-        const concert = await postCreateConcert(concertData);
+        const concert = await postCreateConcertModel(concertData);
 
         return response.success(res, 'Concert created successfully', {
             concert,
@@ -72,9 +72,9 @@ export const createConcert = async (req, res) => {
     }
 };
 
-export const getConcertId = async (req, res) => {
+export const getConcertIdController = async (req, res) => {
     try {
-        const concert = await getConcertById(req.params.id);
+        const concert = await getConcertByIdModel(req.params.id);
         if (!concert) {
             return response.notFound(res, 'Concert not found');
         }
