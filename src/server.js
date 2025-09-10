@@ -8,6 +8,9 @@ import dbConnect from './config/db.config.js';
 import userRoutes from './routes/userRoutes.js';
 import organizerRoutes from './routes/organizerRoutes.js';
 import concertRoutes from './routes/concertRoutes.js';
+import orderRoutes from './routes/orderRoute.js';
+import paymentMethodRoutes from './routes/paymentMethodRoute.js';
+
 import uploadRoutes from './routes/UploadImageRoute.js';
 import {handleUploadError} from './controllers/uploadImageController.js';
 
@@ -46,6 +49,8 @@ app.use('/api/user', userRoutes);
 app.use('/api/organizer', organizerRoutes);
 app.use('/api/concert', concertRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/order', orderRoutes);
+app.use('/api/payment-method', paymentMethodRoutes);
 
 // Error handling middleware for multer errors
 app.use(handleUploadError);
