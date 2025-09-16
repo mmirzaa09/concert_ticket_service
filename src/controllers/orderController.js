@@ -34,9 +34,9 @@ export const getOrderByIdUserController = async (req, res) => {
 };
 
 export const createOrderController = async (req, res) => {
-    const { id_user, id_concert, quantity, total_price } = req.body;
+    const { id_user, id_concert, id_method, quantity, total_price } = req.body;
 
-    if (!id_user || !id_concert || !quantity || !total_price) {
+    if (!id_user || !id_concert || !id_method || !quantity || !total_price) {
         return response.badRequest(res, 'All fields are required');
     }
 
@@ -51,6 +51,7 @@ export const createOrderController = async (req, res) => {
     const payload = {
         id_user,
         id_concert,
+        id_method,
         quantity,
         total_price,
         status: 'pending',

@@ -16,12 +16,61 @@ export const getAllOrderModel = async () => {
 export const getOrderByIdUserModel = async (id_user) => {
     const client = await dbConnect.connect();
     try {
-        const result = await client.query("SELECT * FROM tbl_orders WHERE id_user = $1", [id_user]);
+        const query = `
+            SELECT 
+                o.*,
+                c.id_concert,
+                c.title,
+                c.artist,
+                c.venue,
+                c.date,
+                c.price,
+                c.available_tickets,
+                c.description,
+                c.image_url
+            FROM tbl_orders o
+            JOIN tbl_concerts c ON o.id_concert = c.id_concert
+            WHERE o.id_user = $1
+            ORDER BY o.created_at DESC
+        `;
+        
+        const result = await client.query(query, [id_user]);
         if (result.rows.length === 0) {
-            const message = 'Order not found';
-            throw message;
+            throw new Error('Orders not found for this user');
         }
-        return result.rows[0];
+        
+        // Transform the data to have nested concert object
+        const ordersWithConcerts = result.rows.map(row => {
+            const {
+                id_concert,
+                title,
+                artist,
+                venue,
+                date,
+                price,
+                available_tickets,
+                description,
+                image_url,
+                ...orderData
+            } = row;
+
+            return {
+                ...orderData,
+                concert: {
+                    id_concert,
+                    title,
+                    artist,
+                    venue,
+                    date,
+                    price,
+                    available_tickets,
+                    description,
+                    image_url,
+                }
+            };
+        });
+
+        return ordersWithConcerts;
     } catch (error) {
         console.log("Error fetching order by ID:", error);
         throw error;
@@ -36,6 +85,7 @@ export const postCreateOrderModel = async (orderData) => {
         const {
             id_user,
             id_concert,
+            id_method,
             quantity,
             total_price,
             status = 'pending',
@@ -71,14 +121,15 @@ export const postCreateOrderModel = async (orderData) => {
         }
 
         const query = `
-            INSERT INTO tbl_orders (id_user, id_concert, quantity, total_price, status, reservation_expired)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            INSERT INTO tbl_orders (id_user, id_concert, id_method, quantity, total_price, status, reservation_expired)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
             RETURNING *
         `;
 
         const values = [
             id_user,
             id_concert,
+            id_method,
             quantity,
             total_price,
             status,
