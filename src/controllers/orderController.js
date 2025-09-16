@@ -1,5 +1,6 @@
 import * as response from '../utils/responseHandler.js';
 import { getAllOrderModel, getOrderByIdUserModel, postCreateOrderModel } from "../models/orderModel.js";
+import { updateQuotaConcertController } from './concertController.js';
 
 export const getOrderController = async (req, res) => {
     try {
@@ -33,30 +34,32 @@ export const getOrderByIdUserController = async (req, res) => {
 };
 
 export const createOrderController = async (req, res) => {
-    const { id_user, id_concert, quantity, total_price, status, reservation_expired } = req.body;
+    const { id_user, id_concert, quantity, total_price } = req.body;
 
     if (!id_user || !id_concert || !quantity || !total_price) {
         return response.badRequest(res, 'All fields are required');
     }
-    // Set reservation expiration to 3 days from now
-    const expirationDate = new Date();
-    expirationDate.setDate(expirationDate.getDate() + 3);
+
+    const now = new Date();
+    const indonesiaTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+    const expirationDate = new Date(indonesiaTime.getTime() + (3 * 60 * 60 * 1000));
     const reservation_expired_calculated = expirationDate.toISOString();
 
     // Use calculated expiration if not provided
-    const finalReservationExpired = reservation_expired || reservation_expired_calculated;
+    const finalReservationExpired = reservation_expired_calculated;
 
     const payload = {
         id_user,
         id_concert,
         quantity,
         total_price,
-        status: status || 'pending',
+        status: 'pending',
         reservation_expired: finalReservationExpired,
     }
 
     try {
         const newOrder = await postCreateOrderModel(payload);
+        await updateQuotaConcertController(id_concert, quantity);
         return response.success(res, 'Order created successfully', newOrder);
     } catch (error) {
         if (error === 'User not found') {

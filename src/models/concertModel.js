@@ -80,3 +80,37 @@ export const getConcertByIdModel = async (concertId) => {
         client.release();
     }
 };
+
+export const updateConcertQuotaModel = async (id_concert, quantity) => {
+    const client = await dbConnect.connect();
+    try {
+        // First check if concert exists and has enough tickets
+        const checkQuery = "SELECT available_tickets FROM tbl_concerts WHERE id_concert = $1";
+        const checkResult = await client.query(checkQuery, [id_concert]);
+        
+        if (checkResult.rows.length === 0) {
+            throw new Error('Concert not found');
+        }
+        
+        const currentTickets = checkResult.rows[0].available_tickets;
+        if (currentTickets < quantity) {
+            throw new Error('Insufficient tickets available');
+        }
+        
+        // Update available tickets
+        const updateQuery = `
+            UPDATE tbl_concerts 
+            SET available_tickets = available_tickets - $1 
+            WHERE id_concert = $2 
+            RETURNING *
+        `;
+        
+        const result = await client.query(updateQuery, [quantity, id_concert]);
+        return result.rows[0];
+    } catch (error) {
+        console.log("Error updating concert quota:", error);
+        throw error;
+    } finally {
+        client.release();
+    }
+};

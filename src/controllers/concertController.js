@@ -1,5 +1,5 @@
 import * as response from '../utils/responseHandler.js';
-import { getAllConcertsModel, postCreateConcertModel, getConcertByIdModel } from "../models/concertModel.js";
+import { getAllConcertsModel, postCreateConcertModel, getConcertByIdModel, updateConcertQuotaModel } from "../models/concertModel.js";
 import { generateFileUrl } from "../models/uploadImageModel.js";
 
 export const getConcertController = async (req, res) => {
@@ -82,5 +82,14 @@ export const getConcertIdController = async (req, res) => {
     } catch (error) {
         console.log('Error fetching concert by ID:', error);
         return response.serverError(res, 'Failed to get concert', error.message);
+    }
+};
+
+export const updateQuotaConcertController = async (id_concert, quantity) => {
+    try {
+        const updatedConcert = await updateConcertQuotaModel(id_concert, quantity);
+        return updatedConcert;
+    } catch (error) {
+        throw error;
     }
 };
