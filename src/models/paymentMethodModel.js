@@ -30,3 +30,19 @@ export const postPaymentMethodModel = async (paymentData) => {
         client.release();
     }
 };
+
+export const getPaymentMethodByIdModel = async (id) => {
+    const client = await dbConnect.connect();
+    try {
+        const result = await client.query("SELECT * FROM tbl_payment_method WHERE id_method = $1", [id]);
+        if (result.rows.length === 0) {
+            throw new Error('Payment method not found');
+        }
+        return result.rows[0];
+    } catch (error) {
+        console.log("Error fetching payment method by ID:", error);
+        throw error;
+    } finally {
+        client.release();
+    }
+};
