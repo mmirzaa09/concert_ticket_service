@@ -114,3 +114,16 @@ export const updateConcertQuotaModel = async (id_concert, quantity) => {
         client.release();
     }
 };
+
+export const getConcertByOrganizerModel = async (id_organizer) => {
+    const client = await dbConnect.connect();
+    try {
+        const result = await client.query("SELECT * FROM tbl_concerts WHERE id_organizer = $1", [id_organizer]);
+        return result.rows;
+    } catch (error) {
+        console.log("Error fetching concerts by organizer:", error);
+        throw error;
+    } finally {
+        client.release();
+    }
+};
