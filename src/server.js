@@ -10,6 +10,7 @@ import organizerRoutes from './routes/organizerRoutes.js';
 import concertRoutes from './routes/concertRoutes.js';
 import orderRoutes from './routes/orderRoute.js';
 import paymentMethodRoutes from './routes/paymentMethodRoute.js';
+import transactionRoutes from './routes/transactionRoutes.js';
 
 import uploadRoutes from './routes/UploadImageRoute.js';
 import {handleUploadError} from './controllers/uploadImageController.js';
@@ -51,6 +52,7 @@ app.use('/api/concert', concertRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/order', orderRoutes);
 app.use('/api/payment-method', paymentMethodRoutes);
+app.use('/api/transaction', transactionRoutes);
 
 // Error handling middleware for multer errors
 app.use(handleUploadError);
