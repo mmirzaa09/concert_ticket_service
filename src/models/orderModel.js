@@ -79,6 +79,68 @@ export const getOrderByIdUserModel = async (id_user) => {
     }
 }
 
+export const getOrderByIdModel = async (id_order) => {
+    const client = await dbConnect.connect();
+    try {
+        const query = `
+            SELECT 
+                o.*,
+                c.id_concert,
+                c.title,
+                c.artist,
+                c.venue,
+                c.date,
+                c.price,
+                c.available_tickets,
+                c.description,
+                c.image_url
+            FROM tbl_orders o
+            JOIN tbl_concerts c ON o.id_concert = c.id_concert
+            WHERE o.id_order = $1
+        `;
+        
+        const result = await client.query(query, [id_order]);
+        if (result.rows.length === 0) {
+            throw new Error('Order not found');
+        }
+        
+        // Transform the data to have nested concert object
+        const row = result.rows[0];
+        const {
+            id_concert,
+            title,
+            artist,
+            venue,
+            date,
+            price,
+            available_tickets,
+            description,
+            image_url,
+            ...orderData
+        } = row;
+
+        return {
+            ...orderData,
+            concert: {
+                id_concert,
+                title,
+                artist,
+                venue,
+                date,
+                price,
+                available_tickets,
+                description,
+                image_url,
+            }
+        };
+    } catch (error) {
+        console.log("Error fetching order by ID:", error);
+        throw error;
+    } finally {
+        client.release();
+    }
+};
+
 export const postCreateOrderModel = async (orderData) => {
     const client = await dbConnect.connect();
     try {

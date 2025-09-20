@@ -1,5 +1,5 @@
 import * as response from '../utils/responseHandler.js';
-import { getAllOrderModel, getOrderByIdUserModel, postCreateOrderModel } from "../models/orderModel.js";
+import { getAllOrderModel, getOrderByIdUserModel, getOrderByIdModel, postCreateOrderModel } from "../models/orderModel.js";
 import { updateQuotaConcertController } from './concertController.js';
 
 export const getOrderController = async (req, res) => {
@@ -27,6 +27,24 @@ export const getOrderByIdUserController = async (req, res) => {
         return response.success(res, 'Order fetched successfully', order);
     } catch (error) {
         if (error === 'Order not found') {
+            return response.notFound(res, 'Order not found');
+        }
+        return response.serverError(res, 'Failed to get order', error.message);
+    }
+};
+
+export const getOrderByIdController = async (req, res) => {
+    const { id_order } = req.params;
+
+    if (!id_order) {
+        return response.badRequest(res, 'Order ID is required');
+    }
+
+    try {
+        const order = await getOrderByIdModel(id_order);
+        return response.success(res, 'Order fetched successfully', order);
+    } catch (error) {
+        if (error.message === 'Order not found') {
             return response.notFound(res, 'Order not found');
         }
         return response.serverError(res, 'Failed to get order', error.message);
