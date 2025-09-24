@@ -1,5 +1,5 @@
 import * as response from '../utils/responseHandler.js';
-import { getAllOrderModel, getOrderByIdUserModel, getOrderByIdModel, postCreateOrderModel } from "../models/orderModel.js";
+import { getAllOrderModel, getOrderByIdUserModel, getOrderByIdModel, postCreateOrderModel, updateOrderStatusModel } from "../models/orderModel.js";
 import { updateQuotaConcertController } from './concertController.js';
 
 export const getOrderController = async (req, res) => {
@@ -23,13 +23,24 @@ export const getOrderByIdUserController = async (req, res) => {
     }
 
     try {
-        const order = await getOrderByIdUserModel(id_user);
-        return response.success(res, 'Order fetched successfully', order);
-    } catch (error) {
-        if (error === 'Order not found') {
-            return response.notFound(res, 'Order not found');
+        let orders = await getOrderByIdUserModel(id_user);
+
+        const now = new Date();
+        const expiredOrders = orders.filter(order => new Date(order.reservation_expired) < now && order.status === 'pending');
+
+        if (expiredOrders.length > 0) {
+            const updatePromises = expiredOrders.map(order => updateOrderStatusModel(order.id_order, 'expired'));
+            await Promise.all(updatePromises);
+
+            orders = await getOrderByIdUserModel(id_user);
         }
-        return response.serverError(res, 'Failed to get order', error.message);
+
+        return response.success(res, 'Orders fetched successfully', orders);
+    } catch (error) {
+        if (error.message === 'Orders not found for this user' || error === 'Order not found') {
+            return response.notFound(res, 'No orders found for this user');
+        }
+        return response.serverError(res, 'Failed to get orders', error.message);
     }
 };
 

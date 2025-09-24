@@ -207,3 +207,26 @@ export const postCreateOrderModel = async (orderData) => {
         client.release();
     }
 };
+
+export const updateOrderStatusModel = async (orderId, newStatus) => {
+    const client = await dbConnect.connect();
+    try {
+        const query = `
+            UPDATE tbl_orders
+            SET status = $1
+            WHERE id_order = $2
+            RETURNING *
+        `;
+        const values = [newStatus, orderId];
+        const result = await client.query(query, values);
+        if (result.rows.length === 0) {
+            throw new Error('Order not found or could not be updated.');
+        }
+        return result.rows[0];
+    } catch (error) {
+        console.error("Error updating order status:", error);
+        throw error;
+    } finally {
+        client.release();
+    }
+};
