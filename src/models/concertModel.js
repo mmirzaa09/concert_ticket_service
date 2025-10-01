@@ -115,6 +115,26 @@ export const updateConcertQuotaModel = async (id_concert, quantity) => {
     }
 };
 
+export const restoreTicketsModel = async (id_concert, quantity) => {
+    const client = await dbConnect.connect();
+    try {
+        const updateQuery = `
+            UPDATE tbl_concerts 
+            SET available_tickets = available_tickets + $1 
+            WHERE id_concert = $2 
+            RETURNING *
+        `;
+        
+        const result = await client.query(updateQuery, [quantity, id_concert]);
+        return result.rows[0];
+    } catch (error) {
+        console.log("Error restoring concert tickets:", error);
+        throw error;
+    } finally {
+        client.release();
+    }
+};
+
 export const getConcertByOrganizerModel = async (id_organizer) => {
     const client = await dbConnect.connect();
     try {
