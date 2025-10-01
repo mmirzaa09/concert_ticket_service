@@ -1,6 +1,7 @@
 import * as response from '../utils/responseHandler.js';
 import { getAllOrderModel, getOrderByIdUserModel, getOrderByIdModel, postCreateOrderModel, updateOrderStatusModel } from "../models/orderModel.js";
 import { updateQuotaConcertController } from './concertController.js';
+import { restoreTicketsModel } from '../models/concertModel.js';
 
 export const getOrderController = async (req, res) => {
     try {
@@ -9,7 +10,12 @@ export const getOrderController = async (req, res) => {
             return response.notFound(res, 'No orders found');
         }
 
-        return response.success(res, 'Orders fetched successfully', orders);
+        const data = {
+            'orders': orders,
+            'totalOrders': orders.length
+        }
+
+        return response.success(res, 'Orders fetched successfully', data);
     } catch (error) {
         return response.serverError(res, 'Failed to get orders', error.message);
     }
@@ -29,7 +35,13 @@ export const getOrderByIdUserController = async (req, res) => {
         const expiredOrders = orders.filter(order => new Date(order.reservation_expired) < now && order.status === 'pending');
 
         if (expiredOrders.length > 0) {
-            const updatePromises = expiredOrders.map(order => updateOrderStatusModel(order.id_order, 'expired'));
+            const updatePromises = expiredOrders.map(async (order) => {
+                await updateOrderStatusModel(order.id_order, 'expired');
+                await restoreTicketsModel(order.concert.id_concert, order.quantity);
+                
+                return order;
+            });
+            
             await Promise.all(updatePromises);
 
             orders = await getOrderByIdUserModel(id_user);

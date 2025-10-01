@@ -7,8 +7,12 @@ export const getUserController = async (req, res) => {
         if (!users.length) {
             return response.notFound(res, 'No users found');
         }
+        const data = {
+            'users': users,
+            'totalUsers': users.length
+        };
 
-        return response.success(res, 'Users fetched successfully', users);
+        return response.success(res, 'Users fetched successfully', data);
     } catch (error) {
         return response.serverError(res, 'Failed to get users', error.message);
     }
