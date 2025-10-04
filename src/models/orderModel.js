@@ -39,7 +39,6 @@ export const getOrderByIdUserModel = async (id_user) => {
             throw new Error('Orders not found for this user');
         }
         
-        // Transform the data to have nested concert object
         const ordersWithConcerts = result.rows.map(row => {
             const {
                 id_concert,
@@ -104,7 +103,6 @@ export const getOrderByIdModel = async (id_order) => {
             throw new Error('Order not found');
         }
         
-        // Transform the data to have nested concert object
         const row = result.rows[0];
         const {
             id_concert,
@@ -225,6 +223,52 @@ export const updateOrderStatusModel = async (orderId, newStatus) => {
         return result.rows[0];
     } catch (error) {
         console.error("Error updating order status:", error);
+        throw error;
+    } finally {
+        client.release();
+    }
+};
+
+export const getListOrderDetailModel = async () => {
+    const client = await dbConnect.connect();
+    try {
+        const query = `
+            SELECT 
+                o.id_order,
+                u.name AS customerName,
+                u.email AS customerEmail,
+                c.title AS concertTitle,
+                o.total_price AS amount,
+                o.status,
+                m.type AS paymentMethod,
+                DATE(o.created_at) AS bookingDate
+            FROM tbl_orders o
+            JOIN tbl_users u ON o.id_user = u.id_user
+            JOIN tbl_concerts c ON o.id_concert = c.id_concert
+            JOIN tbl_payment_method m ON o.id_method = m.id_method
+            ORDER BY o.created_at DESC
+        `;
+        
+        const result = await client.query(query);
+        if (result.rows.length === 0) {
+            throw new Error('No orders found');
+        }
+        
+        // Transform the data to match the exact structure you want
+        const transformedData = result.rows.map(row => ({
+            id: row.id_order.toString(),
+            customerName: row.customername,
+            customerEmail: row.customeremail,
+            concertTitle: row.concerttitle,
+            amount: row.amount,
+            status: row.status,
+            paymentMethod: row.paymentmethod,
+            bookingDate: row.bookingdate.toISOString().split('T')[0] // Format as YYYY-MM-DD
+        }));
+        
+        return transformedData;
+    } catch (error) {
+        console.log("Error fetching orders with details:", error);
         throw error;
     } finally {
         client.release();

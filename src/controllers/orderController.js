@@ -1,5 +1,12 @@
 import * as response from '../utils/responseHandler.js';
-import { getAllOrderModel, getOrderByIdUserModel, getOrderByIdModel, postCreateOrderModel, updateOrderStatusModel } from "../models/orderModel.js";
+import {
+  getAllOrderModel,
+  getOrderByIdUserModel,
+  getOrderByIdModel,
+  postCreateOrderModel,
+  updateOrderStatusModel,
+  getListOrderDetailModel,
+} from "../models/orderModel.js";
 import { updateQuotaConcertController } from './concertController.js';
 import { restoreTicketsModel } from '../models/concertModel.js';
 
@@ -36,7 +43,7 @@ export const getOrderByIdUserController = async (req, res) => {
 
         if (expiredOrders.length > 0) {
             const updatePromises = expiredOrders.map(async (order) => {
-                await updateOrderStatusModel(order.id_order, 'expired');
+                await updateOrderStatusModel(order.id_order, 'cancelled');
                 await restoreTicketsModel(order.concert.id_concert, order.quantity);
                 
                 return order;
@@ -86,7 +93,6 @@ export const createOrderController = async (req, res) => {
     const expirationDate = new Date(indonesiaTime.getTime() + (3 * 60 * 60 * 1000));
     const reservation_expired_calculated = expirationDate.toISOString();
 
-    // Use calculated expiration if not provided
     const finalReservationExpired = reservation_expired_calculated;
 
     const payload = {
@@ -114,5 +120,21 @@ export const createOrderController = async (req, res) => {
             return response.badRequest(res, 'Insufficient tickets available');
         }
         return response.serverError(res, 'Failed to create order', error.message);
+    }
+};
+
+export const getListOrderDetailController = async (req, res) => {
+    try {
+        const orderDetails = await getListOrderDetailModel();
+        const data = {
+            'listOrder': orderDetails,
+            'totalOrder': orderDetails.length
+        };
+        return response.success(res, 'Order details fetched successfully', data);
+    } catch (error) {
+        if (error.message === 'No orders found') {
+            return response.notFound(res, 'No orders found');
+        }
+        return response.serverError(res, 'Failed to get order details', error.message);
     }
 };
