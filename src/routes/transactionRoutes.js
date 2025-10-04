@@ -27,8 +27,8 @@ router.get('/user/:id_user', authenticateJWT, getTransactionsByUserIdController)
 router.post('/payment', upload.single('payment_proof'), createTransactionController);
 
 // PUT routes
-router.put('/:id_transaction', upload.single('payment_proof'), authenticateJWT, updateTransactionController);
-router.put('/:id_transaction/status', authenticateJWT, updateTransactionStatusController);
+router.post('/:id_transaction', upload.single('payment_proof'), authenticateJWT, updateTransactionController);
+router.post('/confirm', authenticateJWT, updateTransactionStatusController);
 
 // DELETE routes
 router.delete('/:id_transaction', authenticateJWT, deleteTransactionController);

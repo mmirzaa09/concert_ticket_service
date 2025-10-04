@@ -96,7 +96,6 @@ export const createTransactionController = async (req, res) => {
 
     if (req.file) {
         payment_proof_url = generateFileUrl(req.file.path, req);
-        console.log("Generated payment proof URL:", payment_proof_url);
     }
 
     const now = new Date();
@@ -107,7 +106,7 @@ export const createTransactionController = async (req, res) => {
         id_user,
         payment_proof_url,
         payment_date: paymentDate,
-        transaction_status: 'pending'
+        transaction_status: 'waiting_approve'
     };
 
     try {
@@ -124,39 +123,50 @@ export const createTransactionController = async (req, res) => {
 
 // Update transaction
 export const updateTransactionController = async (req, res) => {
-    const { id_transaction } = req.params;
-    const { payment_date, transaction_status } = req.body;
+    const { id_transaction, transaction_status } = req.body;    
 
     if (!id_transaction) {
         return response.badRequest(res, 'Transaction ID is required');
     }
 
-    // Handle payment proof image upload
-    let payment_proof_url = req.body.payment_proof_url || null;
-
-    if (req.file) {
-        // Generate proper URL for uploaded payment proof
-        payment_proof_url = generateFileUrl(req.file.path, req);
-        console.log("Generated payment proof URL:", payment_proof_url);
-    }
-
     // Validate transaction status if provided
     if (transaction_status) {
-        const validStatuses = ['pending', 'completed', 'failed', 'cancelled'];
+        const validStatuses = ['pending', 'approved', 'rejected', 'cancelled'];
         if (!validStatuses.includes(transaction_status)) {
-            return response.badRequest(res, 'Invalid transaction status. Valid statuses are: pending, completed, failed, cancelled');
+            return response.badRequest(res, 'Invalid transaction status. Valid statuses are: pending, approved, rejected, cancelled');
         }
     }
 
     const payload = {
-        payment_date,
-        payment_proof_url,
+        id_transaction,
         transaction_status
     };
 
     try {
-        const updatedTransaction = await updateTransactionModel(id_transaction, payload);
-        return response.success(res, 'Transaction updated successfully', updatedTransaction);
+        const updatedTransaction = await updateTransactionModel(payload);
+
+        // Fetch the updated transaction with all details to get the order ID
+        const transactionWithDetails = await getTransactionByIdModel(id_transaction);
+
+        // If transaction status is updated, update the corresponding order status
+        if (transactionWithDetails && transaction_status) {
+            const orderId = transactionWithDetails.id_order;
+            let newOrderStatus = null;
+
+            if (transaction_status === 'approved') {
+                newOrderStatus = 'paid';
+            } else if (transaction_status === 'rejected') {
+                newOrderStatus = 'failed';
+            } else if (transaction_status === 'cancelled') {
+                newOrderStatus = 'cancelled';
+            }
+
+            if (newOrderStatus) {
+                await updateOrderStatusModel(orderId, newOrderStatus);
+            }
+        }
+
+        return response.success(res, 'Transaction and order status updated successfully', transactionWithDetails);
     } catch (error) {
         if (error.message === 'Transaction not found') {
             return response.notFound(res, 'Transaction not found');

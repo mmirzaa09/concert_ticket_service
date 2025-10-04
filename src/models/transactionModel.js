@@ -169,11 +169,11 @@ export const createTransactionModel = async (transactionData) => {
     }
 };
 
-export const updateTransactionModel = async (id_transaction, transactionData) => {
+export const updateTransactionModel = async (payload) => {
     const client = await dbConnect.connect();
     try {
         // First check if transaction exists
-        const transactionCheck = await client.query("SELECT * FROM tbl_transactions WHERE id_transaction = $1", [id_transaction]);
+        const transactionCheck = await client.query("SELECT * FROM tbl_transactions WHERE id_transaction = $1", [payload.id_transaction]);
         if (transactionCheck.rows.length === 0) {
             throw new Error('Transaction not found');
         }
@@ -181,21 +181,17 @@ export const updateTransactionModel = async (id_transaction, transactionData) =>
         const query = `
             UPDATE tbl_transactions 
             SET 
-                payment_date = COALESCE($1, payment_date),
-                payment_proof_url = COALESCE($2, payment_proof_url),
-                transaction_status = COALESCE($3, transaction_status),
+                transaction_status = COALESCE($2, transaction_status),
                 updated_at = CURRENT_TIMESTAMP
-            WHERE id_transaction = $4 
+            WHERE id_transaction = $1
             RETURNING *
         `;
         
         const values = [
-            transactionData.payment_date,
-            transactionData.payment_proof_url,
-            transactionData.transaction_status,
-            id_transaction
+            payload.id_transaction,
+            payload.transaction_status
         ];
-        
+
         const result = await client.query(query, values);
         return result.rows[0];
     } catch (error) {
