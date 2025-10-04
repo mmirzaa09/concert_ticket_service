@@ -11,6 +11,7 @@ import {
     getTransactionStatsModel
 } from "../models/transactionModel.js";
 import { generateFileUrl } from "../models/uploadImageModel.js";
+import { updateOrderStatusModel } from "../models/orderModel.js";
 
 // Get all transactions
 export const getAllTransactionsController = async (req, res) => {
@@ -85,18 +86,15 @@ export const getTransactionsByUserIdController = async (req, res) => {
 
 // Create new transaction
 export const createTransactionController = async (req, res) => {
-    console.log('test')
-    const { id_order } = req.body;
+    const { id_order, id_user } = req.body;
 
     if (!id_order) {
         return response.badRequest(res, 'Order ID is required');
     }
 
-    // Handle payment proof image upload
     let payment_proof_url = req.body.payment_proof_url || "";
 
     if (req.file) {
-        // Generate proper URL for uploaded payment proof
         payment_proof_url = generateFileUrl(req.file.path, req);
         console.log("Generated payment proof URL:", payment_proof_url);
     }
@@ -106,6 +104,7 @@ export const createTransactionController = async (req, res) => {
 
     const payload = {
         id_order,
+        id_user,
         payment_proof_url,
         payment_date: paymentDate,
         transaction_status: 'pending'
@@ -113,7 +112,8 @@ export const createTransactionController = async (req, res) => {
 
     try {
         const newTransaction = await createTransactionModel(payload);
-        return response.created(res, 'Transaction created successfully', newTransaction);
+        await updateOrderStatusModel(id_order, 'waiting_approve');
+        return response.created(res, 'Transaction created successfully and order status updated to waiting approval', newTransaction);
     } catch (error) {
         if (error.message === 'Order not found') {
             return response.notFound(res, 'Order not found');

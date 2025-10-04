@@ -24,7 +24,7 @@ router.get('/user/:id_user', authenticateJWT, getTransactionsByUserIdController)
 
 // POST routes
 // router.post('/', upload.single('payment_proof'), authenticateJWT, createTransactionController);
-router.post('/create', upload.single('payment_proof'), createTransactionController);
+router.post('/payment', upload.single('payment_proof'), createTransactionController);
 
 // PUT routes
 router.put('/:id_transaction', upload.single('payment_proof'), authenticateJWT, updateTransactionController);

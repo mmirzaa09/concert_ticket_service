@@ -139,19 +139,21 @@ export const createTransactionModel = async (transactionData) => {
 
         const query = `
             INSERT INTO tbl_transactions (
-                id_order, 
-                payment_date, 
-                payment_proof_url, 
+                id_order,
+                id_user,
+                payment_date,
+                payment_proof_url,
                 transaction_status,
                 created_at,
                 updated_at
             ) 
-            VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) 
+            VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             RETURNING *
         `;
         
         const values = [
             transactionData.id_order,
+            transactionData.id_user,
             transactionData.payment_date || null,
             transactionData.payment_proof_url || null,
             transactionData.transaction_status || 'pending'
