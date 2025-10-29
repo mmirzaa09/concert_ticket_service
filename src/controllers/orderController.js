@@ -6,6 +6,7 @@ import {
   postCreateOrderModel,
   updateOrderStatusModel,
   getListOrderDetailModel,
+  getPaidOrderByIdModel,
 } from "../models/orderModel.js";
 import { updateQuotaConcertController } from './concertController.js';
 import { restoreTicketsModel } from '../models/concertModel.js';
@@ -136,5 +137,19 @@ export const getListOrderDetailController = async (req, res) => {
             return response.notFound(res, 'No orders found');
         }
         return response.serverError(res, 'Failed to get order details', error.message);
+    }
+};
+
+export const getPaidOrderByIdController = async (req, res) => {
+    const { id_order } = req.params;
+    
+    try {
+        const paidOrder = await getPaidOrderByIdModel(id_order);
+        return response.success(res, 'Paid order fetched successfully', paidOrder);
+    } catch (error) {
+        if (error.message === 'Paid order not found with this ID') {
+            return response.notFound(res, error.message);
+        }
+        return response.serverError(res, 'Failed to get paid order', error.message);
     }
 };
