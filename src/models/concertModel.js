@@ -147,3 +147,36 @@ export const getConcertByOrganizerModel = async (id_organizer) => {
         client.release();
     }
 };
+
+export const updateConcertStatusModel = async (concertId, status) => {
+    const client = await dbConnect.connect();
+    try {
+        const query = `
+            UPDATE tbl_concerts 
+            SET status = $1 
+            WHERE id_concert = $2 
+            RETURNING *
+        `;
+        const result = await client.query(query, [status, concertId]);
+        return result.rows[0];
+    } catch (error) {
+        console.log("Error updating concert status:", error);
+        throw error;
+    } finally {
+        client.release();
+    }
+};
+
+export const deleteConcertModel = async (concertId) => {
+    const client = await dbConnect.connect();
+    try {
+        const query = "DELETE FROM tbl_concerts WHERE id_concert = $1 RETURNING *";
+        const result = await client.query(query, [concertId]);
+        return result.rows[0];
+    } catch (error) {
+        console.log("Error deleting concert:", error);
+        throw error;
+    } finally {
+        client.release();
+    }
+};

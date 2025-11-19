@@ -5,6 +5,8 @@ import {
   getConcertByIdModel,
   updateConcertQuotaModel,
   getConcertByOrganizerModel,
+  updateConcertStatusModel,
+  deleteConcertModel,
 } from "../models/concertModel.js";
 import { generateFileUrl } from "../models/uploadImageModel.js";
 
@@ -131,4 +133,46 @@ export const getConcertByOrganizerController = async (req, res) => {
   } catch (error) {
     return response.serverError(res, "Failed to get concerts", error.message);
   }
+};
+
+export const updateConcertStatusController = async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (status === undefined) {
+        return response.badRequest(res, "Status is required");
+    }
+
+    let statusValue;
+    if (status.toLowerCase() === 'active') {
+        statusValue = 1;
+    } else if (status.toLowerCase() === 'inactive') {
+        statusValue = 0;
+    } else {
+        return response.badRequest(res, "Invalid status value. Use 'active' or 'inactive'.");
+    }
+
+    try {
+        const updatedConcert = await updateConcertStatusModel(id, statusValue);
+        if (!updatedConcert) {
+            return response.notFound(res, "Concert not found");
+        }
+        return response.success(res, "Concert status updated successfully", updatedConcert);
+    } catch (error) {
+        return response.serverError(res, "Failed to update concert status", error.message);
+    }
+};
+
+export const deleteConcertController = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const deletedConcert = await deleteConcertModel(id);
+        if (!deletedConcert) {
+            return response.notFound(res, "Concert not found");
+        }
+        return response.success(res, "Concert deleted successfully", deletedConcert);
+    } catch (error) {
+        return response.serverError(res, "Failed to delete concert", error.message);
+    }
 };
