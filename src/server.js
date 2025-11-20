@@ -43,7 +43,7 @@ app.use('/uploads', express.static('uploadImage'));
 app.use(express.static('public'))
 
 app.get('/', (req, res) => {
-  res.send('Hello World!');
+  res.send('<h1>Welcome to the Concert Management API</h1>');
 });
 
 // Routes
