@@ -1,7 +1,7 @@
 import { jwtVerify } from '../utils/functions.js';
 import * as response from '../utils/responseHandler.js';
 
-export const authenticateJWT = (req, res, next) => {
+export const authenticateJWT = async (req, res, next) => {
     // const token = req.headers['authorization']?.split(' ')[1];
     const oidcToken = req.headers['x-vercel-oidc-token'];
     const authHeader = req.headers['authorization'];
@@ -19,7 +19,7 @@ export const authenticateJWT = (req, res, next) => {
     }
 
     try {
-        const decoded = jwtVerify(token);
+        const decoded = await jwtVerify(token);
         req.user = decoded;
         next();
     } catch (error) {
