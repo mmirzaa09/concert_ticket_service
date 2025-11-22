@@ -1,9 +1,10 @@
-import { getFileUrl } from '../models/uploadImageModel.js';
+import { put } from '@vercel/blob';
+import { customAlphabet } from 'nanoid';
+
+const nanoid = customAlphabet('1234567890abcdef', 10);
 
 export const uploadImage = async (req, res) => {
-    console.log('cek this file', req.body);
   try {
-    
     if (!req.file) {
       return res.status(400).json({
         success: false,
@@ -11,31 +12,23 @@ export const uploadImage = async (req, res) => {
       });
     }
 
-    // Get host and port from environment or request
-    const host = process.env.LOCAL_HOST || req.get('host').split(':')[0] || '192.168.50.22';
-    const port = process.env.PORT || 3000;
-
-    // Return success response with file information
-    const relativePath = req.file.path.replace(/\\/g, '/');
-    const fileUrl = getFileUrl(relativePath, host, port);
+    const filename = `${nanoid()}-${req.file.originalname}`;
+    const blob = await put(filename, req.file.buffer, {
+      access: 'public',
+    });
 
     res.status(200).json({
       success: true,
       message: 'Image uploaded successfully',
-      data: {
-        filename: req.file.filename,
-        originalName: req.file.originalname,
-        mimetype: req.file.mimetype,
-        size: req.file.size,
-        path: relativePath,
-        url: fileUrl
-      }
+      data: blob
     });
 
   } catch (error) {
+    console.error('Error uploading to Vercel Blob:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error during upload'
+      message: 'Server error during upload',
+      error: error.message
     });
   }
 };
