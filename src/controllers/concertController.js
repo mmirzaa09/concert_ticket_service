@@ -33,41 +33,26 @@ export const createConcertController = async (req, res) => {
       description,
       total_tickets,
       id_organizer,
+      image_url, // Expect image_url directly from the client
     } = req.body;
 
-    // Handle image URL - either from uploaded file or provided URL
-    let image_url = req.body.image_url || "";
-
-    if (req.file) {
-      // Generate proper URL for uploaded file
-      image_url = generateFileUrl(req.file.path, req);
-      console.log("Generated image URL:", image_url);
-    }
-
     // Validate required fields
-    if (
-      !title ||
-      !artist ||
-      !date ||
-      !venue ||
-      !price ||
-      !description ||
-      !total_tickets ||
-      !id_organizer
-    ) {
-      return response.badRequest(
-        res,
-        "All fields are required: title, artist, date, venue, price, description, total_tickets, id_organizer"
-      );
-    }
-
-    // Validate image is provided
-    if (!image_url) {
-      return response.badRequest(
-        res,
-        "Concert image is required. Either upload an image file or provide image_url"
-      );
-    }
+    // if (
+    //   !title ||
+    //   !artist ||
+    //   !date ||
+    //   !venue ||
+    //   !price ||
+    //   !description ||
+    //   !total_tickets ||
+    //   !id_organizer ||
+    //   !image_url // Also validate image_url
+    // ) {
+    //   return response.badRequest(
+    //     res,
+    //     "All fields are required: title, artist, date, venue, price, description, total_tickets, id_organizer, image_url"
+    //   );
+    // }
 
     // Create concert data with image URL
     const concertData = {
@@ -90,7 +75,7 @@ export const createConcertController = async (req, res) => {
     });
   } catch (error) {
     console.log("Error creating concert:", error);
-    return response.serverError(res, error);
+    return response.serverError(res, "Failed to create concert", error.message);
   }
 };
 
