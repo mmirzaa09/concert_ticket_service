@@ -3,6 +3,8 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import morgan from 'morgan';
 import cors from 'cors';
+import logger from './utils/logger.js';
+import responseLogger from './middleware/responseLogger.js';
 
 import dbConnect from './config/db.config.js';
 import userRoutes from './routes/userRoutes.js';
@@ -31,7 +33,8 @@ async function connectToDatabase() {
 connectToDatabase();
 
 app.use(cors());
-app.use(morgan('combined'));
+app.use(logger);
+app.use(responseLogger);
 
 // support parsing of application/json type post data
 app.use(bodyParser.json());
