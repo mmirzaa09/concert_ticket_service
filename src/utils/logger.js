@@ -15,6 +15,7 @@ const jsonFormat = (tokens, req, res) => {
     'user-agent': tokens['user-agent'](req, res),
     'response-time': tokens['response-time'](req, res),
     body: JSON.stringify(req.body),
+    headers: JSON.stringify(req.headers),
   });
 };
 
