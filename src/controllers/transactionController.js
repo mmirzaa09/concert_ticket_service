@@ -10,8 +10,11 @@ import {
     deleteTransactionModel,
     getTransactionStatsModel
 } from "../models/transactionModel.js";
-import { generateFileUrl } from "../models/uploadImageModel.js";
 import { updateOrderStatusModel } from "../models/orderModel.js";
+import { supabase } from '../utils/supabase.js';
+import { customAlphabet } from 'nanoid';
+
+const nanoid = customAlphabet('1234567890abcdef', 10);
 
 // Get all transactions
 export const getAllTransactionsController = async (req, res) => {
@@ -95,7 +98,27 @@ export const createTransactionController = async (req, res) => {
     let payment_proof_url = req.body.payment_proof_url || "";
 
     if (req.file) {
-        payment_proof_url = generateFileUrl(req.file.path, req);
+        const filename = `${nanoid()}-${req.file.originalname}`;
+      
+        // Upload file to Supabase
+        const { data, error } = await supabase.storage
+            .from('images') 
+            .upload(filename, req.file.buffer, {
+            contentType: req.file.mimetype,
+            cacheControl: '3600',
+            upsert: false,
+            });
+
+        if (error) {
+            throw error;
+        }
+
+        // Get public URL
+        const { data: publicUrlData } = supabase.storage
+            .from('images')
+            .getPublicUrl(data.path);
+
+        payment_proof_url = publicUrlData.publicUrl;
     }
 
     const now = new Date();
@@ -106,13 +129,13 @@ export const createTransactionController = async (req, res) => {
         id_user,
         payment_proof_url,
         payment_date: paymentDate,
-        transaction_status: 'waiting_approve'
+        transaction_status: 'pending'
     };
 
     try {
         const newTransaction = await createTransactionModel(payload);
-        await updateOrderStatusModel(id_order, 'waiting_approve');
-        return response.created(res, 'Transaction created successfully and order status updated to waiting approval', newTransaction);
+        await updateOrderStatusModel(id_order, 'waiting_confirmation');
+        return response.created(res, 'Transaction created successfully and order status updated to waiting confirmation', newTransaction);
     } catch (error) {
         if (error.message === 'Order not found') {
             return response.notFound(res, 'Order not found');
@@ -131,9 +154,9 @@ export const updateTransactionController = async (req, res) => {
 
     // Validate transaction status if provided
     if (transaction_status) {
-        const validStatuses = ['pending', 'approved', 'rejected', 'cancelled'];
+        const validStatuses = ['pending', 'completed', 'failed', 'cancelled'];
         if (!validStatuses.includes(transaction_status)) {
-            return response.badRequest(res, 'Invalid transaction status. Valid statuses are: pending, approved, rejected, cancelled');
+            return response.badRequest(res, 'Invalid transaction status. Valid statuses are: pending, completed, failed, cancelled');
         }
     }
 
@@ -153,9 +176,9 @@ export const updateTransactionController = async (req, res) => {
             const orderId = transactionWithDetails.id_order;
             let newOrderStatus = null;
 
-            if (transaction_status === 'approved') {
+            if (transaction_status === 'completed') {
                 newOrderStatus = 'paid';
-            } else if (transaction_status === 'rejected') {
+            } else if (transaction_status === 'failed') {
                 newOrderStatus = 'failed';
             } else if (transaction_status === 'cancelled') {
                 newOrderStatus = 'cancelled';

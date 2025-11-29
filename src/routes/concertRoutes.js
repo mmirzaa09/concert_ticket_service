@@ -12,10 +12,10 @@ import { upload } from '../middleware/UploadImageMiddleware.js';
 
 const router = express.Router();
 router.get('/', authenticateJWT, getConcertController);
-router.post('/create', upload.single('image'), createConcertController);
+router.post('/create', authenticateJWT, upload.single('image'), createConcertController);
 router.get('/organizer/:id_organizer', authenticateJWT, getConcertByOrganizerController);
-router.get('/:id', authenticateJWT, getConcertIdController);
+router.get('/detail/:id', authenticateJWT, getConcertIdController);
 router.patch('/status/:id', authenticateJWT, updateConcertStatusController);
-router.delete('/:id', authenticateJWT, deleteConcertController);
+router.delete('/delete/:id', authenticateJWT, deleteConcertController);
 
 export default router;

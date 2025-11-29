@@ -8,7 +8,10 @@ import {
   updateConcertStatusModel,
   deleteConcertModel,
 } from "../models/concertModel.js";
-import { generateFileUrl } from "../models/uploadImageModel.js";
+import { supabase } from '../utils/supabase.js';
+import { customAlphabet } from 'nanoid';
+
+const nanoid = customAlphabet('1234567890abcdef', 10);
 
 export const getConcertController = async (req, res) => {
   try {
@@ -33,26 +36,50 @@ export const createConcertController = async (req, res) => {
       description,
       total_tickets,
       id_organizer,
-      image_url, // Expect image_url directly from the client
     } = req.body;
 
+    let image = null;
+    if (req.file) {
+      const filename = `${nanoid()}-${req.file.originalname}`;
+      
+      // Upload file to Supabase
+      const { data, error } = await supabase.storage
+        .from('images') 
+        .upload(filename, req.file.buffer, {
+          contentType: req.file.mimetype,
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      // Get public URL
+      const { data: publicUrlData } = supabase.storage
+        .from('images')
+        .getPublicUrl(data.path);
+
+      image = publicUrlData.publicUrl;
+    }
+
     // Validate required fields
-    // if (
-    //   !title ||
-    //   !artist ||
-    //   !date ||
-    //   !venue ||
-    //   !price ||
-    //   !description ||
-    //   !total_tickets ||
-    //   !id_organizer ||
-    //   !image_url // Also validate image_url
-    // ) {
-    //   return response.badRequest(
-    //     res,
-    //     "All fields are required: title, artist, date, venue, price, description, total_tickets, id_organizer, image_url"
-    //   );
-    // }
+    if (
+      !title ||
+      !artist ||
+      !date ||
+      !venue ||
+      !price ||
+      !description ||
+      !total_tickets ||
+      !id_organizer ||
+      !image // Also validate image_url
+    ) {
+      return response.badRequest(
+        res,
+        "All fields are required: title, artist, date, venue, price, description, total_tickets, id_organizer, image"
+      );
+    }
 
     // Create concert data with image URL
     const concertData = {
@@ -64,7 +91,7 @@ export const createConcertController = async (req, res) => {
       description,
       total_tickets: parseInt(total_tickets), // Convert to number
       id_organizer: parseInt(id_organizer), // Convert to number
-      image_url,
+      image,
     };
 
     // Save concert to database

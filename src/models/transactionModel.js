@@ -156,9 +156,9 @@ export const createTransactionModel = async (transactionData) => {
             transactionData.id_user,
             transactionData.payment_date || null,
             transactionData.payment_proof_url || null,
-            transactionData.transaction_status || 'pending'
+            transactionData.transaction_status
         ];
-        
+
         const result = await client.query(query, values);
         return result.rows[0];
     } catch (error) {

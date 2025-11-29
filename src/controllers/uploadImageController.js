@@ -4,8 +4,6 @@ import { customAlphabet } from 'nanoid';
 const nanoid = customAlphabet('1234567890abcdef', 10);
 
 export const uploadImage = async (req, res) => {
-  // console.log('Received file:', req.file);
-  console.log('check supabase client:', supabase.storage);
   try {
     if (!req.file) {
       return res.status(400).json({
