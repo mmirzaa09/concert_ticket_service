@@ -90,8 +90,7 @@ export const createOrderController = async (req, res) => {
     }
 
     const now = new Date();
-    const indonesiaTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
-    const expirationDate = new Date(indonesiaTime.getTime() + (3 * 60 * 60 * 1000));
+    const expirationDate = new Date(now.getTime() + (3 * 60 * 60 * 1000)); // 3 hours from now
     const reservation_expired_calculated = expirationDate.toISOString();
 
     const finalReservationExpired = reservation_expired_calculated;
