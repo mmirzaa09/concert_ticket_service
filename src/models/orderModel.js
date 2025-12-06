@@ -161,7 +161,7 @@ export const getPaidOrderByIdModel = async (id_order) => {
             FROM tbl_orders o
             JOIN tbl_users u ON o.id_user = u.id_user
             JOIN tbl_concerts c ON o.id_concert = c.id_concert
-            WHERE o.id_order = $1 AND o.status = 'paid'
+            WHERE o.id_order = $1 AND o.status = 'completed'
         `;
 
         const result = await client.query(query, [id_order]);
