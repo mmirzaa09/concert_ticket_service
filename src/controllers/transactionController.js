@@ -146,6 +146,7 @@ export const createTransactionController = async (req, res) => {
 
 // Update transaction
 export const updateTransactionController = async (req, res) => {
+    console.log('updateTransactionController')
     const { id_transaction, transaction_status } = req.body;    
 
     if (!id_transaction) {
@@ -154,9 +155,9 @@ export const updateTransactionController = async (req, res) => {
 
     // Validate transaction status if provided
     if (transaction_status) {
-        const validStatuses = ['pending', 'completed', 'failed', 'cancelled'];
+        const validStatuses = ['pending', 'completed', 'failed', 'cancelled', 'rejected'];
         if (!validStatuses.includes(transaction_status)) {
-            return response.badRequest(res, 'Invalid transaction status. Valid statuses are: pending, completed, failed, cancelled');
+            return response.badRequest(res, 'Invalid transaction status. Valid statuses are: pending, completed, failed, cancelled, rejected');
         }
     }
 
@@ -200,8 +201,7 @@ export const updateTransactionController = async (req, res) => {
 
 // Update transaction status only
 export const updateTransactionStatusController = async (req, res) => {
-    const { id_transaction } = req.params;
-    const { transaction_status } = req.body;
+    const { transaction_status, id_transaction } = req.body;
 
     if (!id_transaction) {
         return response.badRequest(res, 'Transaction ID is required');
@@ -213,6 +213,9 @@ export const updateTransactionStatusController = async (req, res) => {
 
     try {
         const updatedTransaction = await updateTransactionStatusModel(id_transaction, transaction_status);
+        const transactionWithDetails = await getTransactionByIdModel(id_transaction);
+        const orderId = transactionWithDetails.id_order;
+        await updateOrderStatusModel(orderId, transaction_status);
         return response.success(res, 'Transaction status updated successfully', updatedTransaction);
     } catch (error) {
         if (error.message === 'Transaction not found') {

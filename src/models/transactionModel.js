@@ -212,7 +212,7 @@ export const updateTransactionStatusModel = async (id_transaction, transaction_s
         }
 
         // Validate status
-        const validStatuses = ['pending', 'completed', 'failed', 'cancelled'];
+        const validStatuses = ['pending', 'completed', 'failed', 'cancelled', 'rejected'];
         if (!validStatuses.includes(transaction_status)) {
             throw new Error('Invalid transaction status');
         }
