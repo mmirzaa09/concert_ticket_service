@@ -5,7 +5,8 @@ import {
   getOrderByIdController,
   createOrderController,
   getListOrderDetailController,
-  getPaidOrderByIdController
+  getPaidOrderByIdController,
+  getOrdersByOrganizerController
 } from "../controllers/orderController.js";
 import { authenticateJWT } from '../middleware/jwtMiddleware.js';
 
@@ -14,6 +15,7 @@ const router = express.Router();
 router.get('/',authenticateJWT, getOrderController);
 router.get('/list', getListOrderDetailController);
 router.get('/paid/:id_order', authenticateJWT, getPaidOrderByIdController);
+router.get('/organizer/:id_organizer', authenticateJWT, getOrdersByOrganizerController);
 router.get('/user/:id_user', authenticateJWT, getOrderByIdUserController);
 router.get('/:id_order', authenticateJWT, getOrderByIdController);
 router.post('/inquiry', authenticateJWT, createOrderController);

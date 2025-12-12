@@ -306,6 +306,97 @@ export const updateOrderStatusModel = async (orderId, newStatus) => {
     }
 };
 
+export const getOrdersByOrganizerModel = async (id_organizer) => {
+    const client = await dbConnect.connect();
+    try {
+        const query = `
+            SELECT 
+                o.id_order,
+                u.name AS customerName,
+                u.email AS customerEmail,
+                c.title AS concertTitle,
+                o.total_price AS amount,
+                o.status,
+                m.type AS paymentMethod,
+                DATE(o.created_at) AS bookingDate
+            FROM tbl_orders o
+            JOIN tbl_users u ON o.id_user = u.id_user
+            JOIN tbl_concerts c ON o.id_concert = c.id_concert
+            JOIN tbl_payment_method m ON o.id_method = m.id_method
+            WHERE c.id_organizer = $1
+            ORDER BY o.created_at DESC
+        `;
+        
+        const result = await client.query(query, [id_organizer]);
+        
+        if (result.rows.length === 0) {
+            return [];
+        }
+
+        console.log("Orders fetched for organizer:", result.rows);
+
+        const transformedData = result.rows.map(row => ({
+            id: row.id_order.toString(),
+            customerName: row.customername,
+            customerEmail: row.customeremail,
+            concertTitle: row.concerttitle,
+            amount: row.amount,
+            status: row.status,
+            paymentMethod: row.paymentmethod,
+            bookingDate: row.bookingdate.toISOString().split('T')[0] // Format as YYYY-MM-DD
+        }));
+        
+        return transformedData;
+
+        // const ordersWithDetails = result.rows.map(row => {
+        //     const {
+        //         user_name,
+        //         user_email,
+        //         user_phone,
+        //         id_concert,
+        //         concert_title,
+        //         artist,
+        //         venue,
+        //         concert_date,
+        //         concert_price,
+        //         available_tickets,
+        //         concert_description,
+        //         concert_image,
+        //         payment_method,
+        //         ...orderData
+        //     } = row;
+
+        //     return {
+        //         ...orderData,
+        //         user: {
+        //             name: user_name,
+        //             email: user_email,
+        //             phone_number: user_phone
+        //         },
+        //         concert: {
+        //             id_concert,
+        //             title: concert_title,
+        //             artist,
+        //             venue,
+        //             date: concert_date,
+        //             price: concert_price,
+        //             available_tickets,
+        //             description: concert_description,
+        //             image_url: concert_image
+        //         },
+        //         payment_method
+        //     };
+        // });
+
+        // return ordersWithDetails;
+    } catch (error) {
+        console.log("Error fetching orders by organizer:", error);
+        throw error;
+    } finally {
+        client.release();
+    }
+};
+
 export const getListOrderDetailModel = async () => {
     const client = await dbConnect.connect();
     try {

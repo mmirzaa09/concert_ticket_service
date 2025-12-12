@@ -7,6 +7,7 @@ import {
   updateOrderStatusModel,
   getListOrderDetailModel,
   getPaidOrderByIdModel,
+  getOrdersByOrganizerModel,
 } from "../models/orderModel.js";
 import { updateQuotaConcertController } from './concertController.js';
 import { restoreTicketsModel } from '../models/concertModel.js';
@@ -150,5 +151,26 @@ export const getPaidOrderByIdController = async (req, res) => {
             return response.notFound(res, error.message);
         }
         return response.serverError(res, 'Failed to get paid order', error.message);
+    }
+};
+
+export const getOrdersByOrganizerController = async (req, res) => {
+    const { id_organizer } = req.params;
+
+    if (!id_organizer) {
+        return response.badRequest(res, 'Organizer ID is required');
+    }
+
+    try {
+        const orders = await getOrdersByOrganizerModel(id_organizer);
+
+        const data = {
+            orders: orders,
+            totalOrders: orders.length
+        };
+
+        return response.success(res, 'Orders fetched successfully', data);
+    } catch (error) {
+        return response.serverError(res, 'Failed to get orders by organizer', error.message);
     }
 };
