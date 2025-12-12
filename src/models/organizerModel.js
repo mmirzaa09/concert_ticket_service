@@ -77,3 +77,32 @@ export const postLoginOrganizerModel = async (email, password) => {
         client.release();
     }
 };
+
+export const updateOrganizerStatusModel = async (id_organizer, status) => {
+    const client = await dbConnect.connect();
+    try {
+        // Check if organizer exists
+        const checkResult = await client.query(
+            'SELECT * FROM tbl_organizers WHERE id_organizer = $1',
+            [id_organizer]
+        );
+
+        if (checkResult.rows.length === 0) {
+            throw new Error('Organizer not found');
+        }
+
+        // Update organizer status
+        const result = await client.query(
+            'UPDATE tbl_organizers SET status = $1 WHERE id_organizer = $2 RETURNING *',
+            [status, id_organizer]
+        );
+
+        const { password, ...organizerWithoutPassword } = result.rows[0];
+        return organizerWithoutPassword;
+    } catch (error) {
+        console.error('Error updating organizer status:', error);
+        throw error;
+    } finally {
+        client.release();
+    }
+};

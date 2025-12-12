@@ -1,5 +1,5 @@
 import * as response from '../utils/responseHandler.js';
-import { getAllOrganizersModel, postRegisterOrganizerModel, postLoginOrganizerModel } from "../models/organizerModel.js";
+import { getAllOrganizersModel, postRegisterOrganizerModel, postLoginOrganizerModel, updateOrganizerStatusModel } from "../models/organizerModel.js";
 
 export const getOrganizerController = async (req, res) => {
     try {
@@ -50,5 +50,34 @@ export const loginOrganizerController = async (req, res) => {
         }
 
         return response.serverError(res, error.message);
+    }
+};
+
+export const updateOrganizerStatusController = async (req, res) => {
+    const { id_organizer } = req.params;
+    const { status } = req.body;
+
+    console.log('request body status:', req.body);
+
+    if (!id_organizer) {
+        return response.badRequest(res, 'Organizer ID is required');
+    }
+
+    if (status === undefined || status === null) {
+        return response.badRequest(res, 'Status is required');
+    }
+
+    // if (status !== 0 && status !== 1) {
+    //     return response.badRequest(res, 'Status must be 0 (inactive) or 1 (active)');
+    // }
+
+    try {
+        const updatedOrganizer = await updateOrganizerStatusModel(id_organizer, status);
+        return response.success(res, 'Organizer status updated successfully', updatedOrganizer);
+    } catch (error) {
+        if (error.message === 'Organizer not found') {
+            return response.notFound(res, 'Organizer not found');
+        }
+        return response.serverError(res, 'Failed to update organizer status', error.message);
     }
 };
